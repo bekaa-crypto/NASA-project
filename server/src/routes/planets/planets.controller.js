@@ -1,9 +1,13 @@
-const planets = require("../../models/planets.models");
-
 function getAllPlanets(req, res) {
-  return res.status(200).json(planets);
+  const planets = [
+    { name: "Mercury" },
+    { name: "Venus" },
+    { name: "Earth" },
+    { name: "Mars" },
+  ];
+  res.status(200).json(planets);
 }
 
-module.exports = {
-  getAllPlanets,
+module.exports = { 
+  getAllPlanets 
 };
