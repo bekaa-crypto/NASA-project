@@ -3,7 +3,7 @@ const { httpGetAllPlanets } = require("./planets.controller");
 
 const planetRouter = express.Router();
 
-
-planetRouter.get("/planets", httpGetAllPlanets);
+// Root "/" because mounted on /v1/planets
+planetRouter.get("/", httpGetAllPlanets);
 
 module.exports = planetRouter;

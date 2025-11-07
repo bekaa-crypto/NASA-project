@@ -1,5 +1,4 @@
 const launches = new Map();
-
 let latestFlightNumber = 100;
 
 const launch = {
@@ -7,8 +6,8 @@ const launch = {
   mission: "Kepler Exploration X",
   rocket: "Explorer IS1",
   launchDate: new Date("December 27, 2030").toISOString(),
-  destination: "Kepler-442 b",
-  customer: ["Eyu", "NASA"],
+  target: "Kepler-442b",
+  customers: ["ZTM", "NASA"],
   upcoming: true,
   success: true,
 };
@@ -18,20 +17,28 @@ launches.set(launch.flightNumber, launch);
 function getAllLaunches() {
   return Array.from(launches.values());
 }
+
 function addNewLaunch(launch) {
   latestFlightNumber++;
   launches.set(
-    launch.latestFlightNumber ,
+    latestFlightNumber,
     Object.assign(launch, {
-      success: true,
-      upcoming: true,
       flightNumber: latestFlightNumber,
-      customers: ["Eyoab", "NASA"],
+      upcoming: true,
+      success: true,
+      customers: ["zero to mastery", "NASA"],
     })
   );
 }
 
-module.exports = { 
-    getAllLaunches,
-    addNewLaunch,
- }; 
+function abortLaunch(flightNumber) {
+  const launch = launches.get(flightNumber);
+  if (launch) {
+    launch.upcoming = false;
+    launch.success = false;
+    return true;
+  }
+  return false;
+}
+
+module.exports = { getAllLaunches, addNewLaunch, abortLaunch };

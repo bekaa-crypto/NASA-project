@@ -8,7 +8,6 @@ const server = http.createServer(app);
 
 async function startServer() {
   await loadPlanetsData(); // Load planets before starting server
-
   server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
