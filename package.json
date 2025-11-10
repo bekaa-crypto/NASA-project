@@ -11,6 +11,7 @@
     "client": "npm start --prefix client",
     "watch": "npm run server & npm run client",
     "deploy": "npm run build --prefix client && npm start --prefix server",
+    "deploy-cluster": "npm run build --prefix client && npm run cluster --prefix server",
     "test": "npm test --prefix server && npm test --prefix client"
   },
   "repository": {
@@ -24,5 +25,9 @@
   "bugs": {
     "url": "https://github.com/bekaa-crypto/NASA-project/issues"
   },
-  "homepage": "https://github.com/bekaa-crypto/NASA-project#readme"
+  "homepage": "https://github.com/bekaa-crypto/NASA-project#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "mongodb": "^7.0.0"
+  }
 }

@@ -1,0 +1,13 @@
+/* Global UI tweaks to ensure selects are readable against dark background */
+select,
+select option {
+  color: #000 !important;
+  background-color: #fff !important;
+}
+
+/* Ensure the select element itself is visible inside Arwes frames */
+select {
+  padding: 6px 8px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}

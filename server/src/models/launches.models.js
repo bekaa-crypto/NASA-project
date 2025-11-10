@@ -1,4 +1,6 @@
+//const launches = require("./launches.models");
 const launches = new Map();
+
 let latestFlightNumber = 100;
 
 const launch = {
@@ -33,7 +35,7 @@ function addNewLaunch(launch) {
       customers: ["Eyoab", "NASA"],
     })
   );
-}
+} 
 
 function abortLaunchById(launchId) {
   const launch = launches.get(launchId);

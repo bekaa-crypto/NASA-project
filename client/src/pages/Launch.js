@@ -6,11 +6,11 @@ const Launch = (props) => {
   const selectorBody = useMemo(() => {
     return props.planets?.map((planet) => (
       <option
-        value={planet.kepler_name}
-        key={planet.kepler_name}
+        value={planet.keplerName}
+        key={planet.keplerName}
         style={{ color: "#000" }}
       >
-        {planet.kepler_name}
+        {planet.keplerName}
       </option>
     ));
   }, [props.planets]);
