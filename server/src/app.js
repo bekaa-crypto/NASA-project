@@ -3,9 +3,7 @@ const cors = require("cors");
 const path = require("path");
 const morgan = require("morgan");
 
-const planetRouter = require("./routes/planets/planets.router");
-const launchesRouter = require("./routes/launches/launches.routes");
-
+const api= require("./routes/api");
 
 const app = express();
 
@@ -15,14 +13,9 @@ app.use(morgan("combined"));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-// API Routes with /v1 prefix
-app.use("/v1/planets", planetRouter);
-app.use("/v1/launches", launchesRouter);
 
-// Convenience aliases (allow requests without the /v1 prefix and accept common typo)
-app.use("/planets", planetRouter);
-app.use("/launches", launchesRouter);
-app.use("/launche", launchesRouter);
+// API Routes
+app.use("/v1", api);
 
 
 // Root

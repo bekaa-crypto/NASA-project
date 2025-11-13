@@ -5,8 +5,10 @@ const {
   existsLaunchWithId,
 } = require("../../models/launches.models");
 
+const { getPagination } = require("../../services/quary");
 async function httpGetAllLaunches(req, res) {
-  const launches = await getAllLaunches();
+  const { skip, limit } = getPagination(req.query);
+  const launches = await getAllLaunches(skip, limit); // ✅ Use await here
   return res.status(200).json(launches);
 }
 

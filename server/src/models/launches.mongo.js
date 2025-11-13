@@ -10,7 +10,7 @@ const launchSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rocket: {
+  rocket: { 
     type: String,
     required: true,
   },
@@ -20,7 +20,6 @@ const launchSchema = new mongoose.Schema({
   },
   target: {
     type: String,
-    required: true,
   },
   customers: [String],
   upcoming: {
