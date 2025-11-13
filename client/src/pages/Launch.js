@@ -43,6 +43,11 @@ const Launch = (props) => {
           gridGap: "10px 20px",
         }}
       >
+        {props.launchError && (
+          <div style={{ gridColumn: "1 / -1", color: "#ff6b6b" }}>
+            {props.launchError}
+          </div>
+        )}
         <label htmlFor="launch-day">Launch Date</label>
         <input
           type="date"

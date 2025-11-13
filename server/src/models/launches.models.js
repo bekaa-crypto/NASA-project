@@ -12,23 +12,6 @@ const planets = require("./planets.mongo"); // Planets collection
 // Default flight number (used for initial launches)
 let latestFlightNumber = 100;
 
-// ✅ Default launch object
-const defaultLaunch = {
-  flightNumber: latestFlightNumber,
-  mission: "Kepler Exploration X",
-  rocket: "Explorer IS1",
-  launchDate: new Date("December 27, 2030"),
-  target: "Kepler-442 b",
-  customers: ["Eyoab", "NASA"],
-  upcoming: true,
-  success: true,
-};
-
-// Save the default launch on startup (after planet check)
-(async () => {
-  await saveLaunch(defaultLaunch);
-})();
-
 // SpaceX API endpoint
 const SPACEX_API_URL = "https://api.spacexdata.com/v4/launches/query";
 
@@ -133,10 +116,13 @@ async function getLatestFlightNumber() {
 async function getAllLaunches(skip, limit) {
   // Exclude internal MongoDB fields (_id, __v)
   return await launchesDatabase
-  .find({}, { _id: 0, __v: 0 })
-  .sort({ flightNumber: 1 })
-  .skip(skip)
-  .limit(limit  );
+    .find({}, { _id: 0, __v: 0 })
+    // Return upcoming launches first, then newest by flightNumber. This
+    // ensures upcoming missions appear at the top of the list the frontend
+    // fetches (the client requests launches without pagination by default).
+    .sort({ upcoming: -1, flightNumber: -1 })
+    .skip(skip)
+    .limit(limit);
 }
 
 // ===============================================
@@ -152,17 +138,31 @@ async function saveLaunch(launch) {
     });
 
     if (!planet) {
-      console.warn(`⚠️ No matching planet found for target: ${targetName}`);
-      return; // Skip saving if planet not found
+      // Strict validation: if the client specified a target planet but it's not
+      // present in the planets collection, reject the launch request. This
+      // prevents scheduling launches to unknown destinations.
+      const msg = `No matching planet found for target: ${targetName}`;
+      console.warn(`⚠️ ${msg}`);
+      throw new Error(msg);
     }
   }
 
   // Insert or update launch
-  await launchesDatabase.findOneAndUpdate(
+  const result = await launchesDatabase.findOneAndUpdate(
     { flightNumber: launch.flightNumber },
     { $set: launch },
-    { upsert: true }
+    { upsert: true, new: true, runValidators: true }
   );
+  // Diagnostic log: show that a launch was saved/updated and its key properties
+  try {
+    console.log(
+      `💾 Launch saved: flightNumber=${result.flightNumber}, mission=${result.mission}, upcoming=${result.upcoming}`
+    );
+  } catch (err) {
+    // ignore logging errors
+  }
+
+  return result;
 }
 
 // ===============================================
@@ -178,19 +178,43 @@ async function addNewLaunch(launch) {
     customers: ["Eyoab", "NASA"],
   });
 
-  await saveLaunch(newLaunch);
+  const saved = await saveLaunch(newLaunch);
+  if (!saved) {
+    throw new Error("Failed to save launch");
+  }
+  return saved;
 }
 
 // ===============================================
 // ❌ Abort a launch by ID
 // ===============================================
 async function abortLaunchById(launchId) {
-  const aborted = await launchesDatabase.updateOne(
+  const result = await launchesDatabase.updateOne(
     { flightNumber: launchId },
     { $set: { upcoming: false, success: false } }
   );
 
-  return aborted.modifiedCount === 1;
+  // Fetch updated document for diagnostics and return it to the caller.
+  const updated = await launchesDatabase.findOne(
+    { flightNumber: launchId },
+    { _id: 0, __v: 0 }
+  );
+
+  try {
+    if (updated) {
+      console.log(
+        `✂️ Launch aborted: flightNumber=${updated.flightNumber}, upcoming=${updated.upcoming}, success=${updated.success}`
+      );
+    } else {
+      console.log(
+        `✂️ Launch abort attempted but document not found: flightNumber=${launchId}`
+      );
+    }
+  } catch (err) {
+    // ignore logging errors
+  }
+
+  return updated;
 }
 
 // ===============================================

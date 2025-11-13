@@ -46,6 +46,18 @@ function loadPlanetsData() {
         try {
           await Promise.all(updatePromises); // Wait for all planets to save
           console.log(`${updatePromises.length} habitable planets found!`);
+          // Also log the total number of planets actually stored in DB so it's
+          // easy to verify whether CSV loading succeeded and how many entries
+          // exist after upserts.
+          try {
+            const total = await planets.countDocuments();
+            console.log(`📦 Total planets in DB after load: ${total}`);
+          } catch (countErr) {
+            console.warn(
+              "Could not count planets in DB:",
+              countErr.message || countErr
+            );
+          }
           resolve();
         } catch (err) {
           reject(err);

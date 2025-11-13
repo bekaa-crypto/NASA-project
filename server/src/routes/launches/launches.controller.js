@@ -9,6 +9,16 @@ const { getPagination } = require("../../services/quary");
 async function httpGetAllLaunches(req, res) {
   const { skip, limit } = getPagination(req.query);
   const launches = await getAllLaunches(skip, limit); // ✅ Use await here
+  try {
+    const total = launches.length;
+    const upcomingCount = launches.filter((l) => l.upcoming).length;
+    const historyCount = total - upcomingCount;
+    console.log(
+      `📤 GET /launches -> total=${total}, upcoming=${upcomingCount}, history=${historyCount}`
+    );
+  } catch (err) {
+    // ignore logging errors
+  }
   return res.status(200).json(launches);
 }
 
@@ -34,8 +44,17 @@ async function httpAddNewLaunch(req, res) {
     });
   }
 
-  await addNewLaunch(launch); // ✅ Use await here
-  return res.status(201).json(launch);
+  try {
+    const savedLaunch = await addNewLaunch(launch); // returns saved document
+    return res.status(201).json(savedLaunch);
+  } catch (err) {
+    console.error("Error adding launch:", err.message || err);
+    // If the error came from missing planet validation, return 400
+    if (err.message && err.message.startsWith("No matching planet found")) {
+      return res.status(400).json({ error: err.message });
+    }
+    return res.status(500).json({ error: "Could not schedule launch" });
+  }
 }
 
 async function httpAbortLaunch(req, res) {
@@ -61,13 +80,12 @@ async function httpAbortLaunch(req, res) {
     });
   }
 
-  return res.status(200).json({
-    ok: true,
-  });
+  // Return the updated launch document so the client can update UI
+  return res.status(200).json(aborted);
 }
 
 module.exports = {
   httpGetAllLaunches,
   httpAddNewLaunch,
-  httpAbortLaunch, 
+  httpAbortLaunch,
 };

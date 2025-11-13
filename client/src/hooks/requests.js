@@ -1,33 +1,46 @@
-const API_URL =  'http://localhost:5000/v1';
+const API_URL = "http://localhost:5000/v1";
 
 // Load planets and return as JSON.
-async function  httpGetPlanets() {
+async function httpGetPlanets() {
   const response = await fetch(`${API_URL}/planets`);
   return await response.json();
-}  
+}
 
 // Load launches, sort by flight number, and return as JSON.
 async function httpGetLaunches() {
   const response = await fetch(`${API_URL}/launches`);
-  const fetchedLaunches = await response.json();
-  return fetchedLaunches.sort((a, b) => {
-    return a.flightNumber - b.flightNumber;
-  });
+  // Keep server ordering (server now returns upcoming first). Do not
+  // re-sort on the client so the `upcoming` / `history` split remains
+  // consistent with server-side ordering.
+  return await response.json();
 }
 
 // Submit given launch data to launch system.
 async function httpSubmitLaunch(launch) {
   try {
-    return await fetch(`${API_URL}/launches`, {
+    const response = await fetch(`${API_URL}/launches`, {
       method: "post",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(launch),
     });
-  } catch(err) {
+
+    // Try to parse JSON body (error or success) so the client can show
+    // validation errors returned by the server.
+    let body = null;
+    try {
+      body = await response.json();
+    } catch (e) {
+      // ignore parse errors
+    }
+
+    return { ok: response.ok, status: response.status, body };
+  } catch (err) {
     return {
       ok: false,
+      status: 0,
+      body: { error: "Network error" },
     };
   }
 }
@@ -35,20 +48,20 @@ async function httpSubmitLaunch(launch) {
 // Delete launch with given ID.
 async function httpAbortLaunch(id) {
   try {
-    return await fetch(`${API_URL}/launches/${id}`, {
+    const response = await fetch(`${API_URL}/launches/${id}`, {
       method: "delete",
     });
-  } catch(err) {
+    let body = null;
+    try {
+      body = await response.json();
+    } catch (e) {
+      // ignore
+    }
+    return { ok: response.ok, status: response.status, body };
+  } catch (err) {
     console.log(err);
-    return {
-      ok: false,
-    };
+    return { ok: false, status: 0, body: { error: "Network error" } };
   }
 }
 
-export {
-  httpGetPlanets,
-  httpGetLaunches,
-  httpSubmitLaunch,
-  httpAbortLaunch,
-};
+export { httpGetPlanets, httpGetLaunches, httpSubmitLaunch, httpAbortLaunch };
