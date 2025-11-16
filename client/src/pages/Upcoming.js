@@ -13,6 +13,7 @@ const styles = () => ({
 const Upcoming = (props) => {
   const { entered, launches, classes, abortLaunch, abortedFlight } = props;
 
+  // FIXED: include abortedFlight in the dependencies
   const tableBody = useMemo(() => {
     return launches
       ?.filter((launch) => launch.upcoming)
@@ -25,6 +26,7 @@ const Upcoming = (props) => {
               transition: "all 600ms ease",
             }
           : {};
+
         return (
           <tr key={String(launch.flightNumber)} style={rowStyle}>
             <td>
@@ -45,10 +47,7 @@ const Upcoming = (props) => {
           </tr>
         );
       });
-  }, [launches, abortLaunch, classes.link]);
-  // Note: abortedFlight is intentionally omitted from deps to avoid
-  // re-creating the tableBody during the brief abort animation. The
-  // animation is applied via inline style and will update on render.
+  }, [launches, abortLaunch, classes.link, abortedFlight]);
 
   return (
     <Appear id="upcoming" animate show={entered}>
